@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel=stylesheet type=text/css href="{{url_for('static',filename='styles.css')}}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="//apis.google.com/js/platform.js?onload=start"> </script>
+  <!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
+  </head>
+
+  <body>  
+  <!-- GOOGLE PLUS SIGN IN BUTTON-->
+  <!--Specific which Google resource we want to access: here is their email: data-scope="openid email-->
+  <!--Add you client ID under data-clientid="YOUR_CLIENT_ID_GOES_HERE.apps.googleusercontent.com"-->
+  <!--Select offline, your server can make request to Google API even when users are not logged in: data-accesstype="offline"-->
+  <!--Determines the scope of URI that can access the cookie. Use single_host if your website has only one host name and no subdomains: data-cookiepolicy="single_host_origin"-->
+  <!--Set if users need to log in everytime we visit the login page: Force is good for debugging but not when the site is live. Remove for live webapp-->
+    <div id="signinButton" class="container text-center">
+      <h2 class="display-5">Login to the Catalog App with Google Sign-In</h2>
+      <span class="g-signin"
+        data-scope="openid email profile"
+        data-clientid="330951238792-9rvqr7n0locedq1uh33e08b88g3a1fkc.apps.googleusercontent.com"
+        data-redirecturi="postmessage"
+        data-accesstype="offline"
+        data-cookiepolicy="single_host_origin"
+        data-callback="signInCallback"
+        data-approvalprompt="force">
+      </span>
+      <div class="row">
+          <a href="{{url_for('allCategories')}}" class="col-12 my-3"><button type="button" class="btn btn-outline-secondary my-2">Return to the Catalog</button></a>
+      </div>
+    </div>
+    <div id="result" class="container text-center"></div>
+
+    <script>
+    function signInCallback(authResult) {
+      if (authResult['code']) {
+        // Hide the sign-in button now that the user is authorized
+        $('#signinButton').attr('style', 'display: none');
+        // Send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main restaurants page
+        $.ajax({
+          type: 'POST',
+          url: '/gconnect?state={{STATE}}',
+          //tell python not to process code
+          processData: false,
+          //Specify the type of data you are sending along to the server
+          data: authResult['code'],
+          //indicates we are sending an arbitrary binary stream of date formatted in utf-8
+          contentType: 'application/octet-stream; charset=utf-8',
+          //If successful(200): send login successful message for 4sec(4000)and redirect to main restaurant page
+          success: function(result) {
+            // Handle or verify the server response if necessary.
+            if (result) {
+              $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
+             setTimeout(function() {
+              window.location.href = "/catalog";
+             }, 4000);
+      //if error reported, else if to report the error to the server    
+          } else if (authResult['error']) {
+        console.log('There was an error: ' + authResult['error']);
+      //If no response by my server to the callback function, 
+      //return the error message to the user
+      } else {
+            $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+             }
+          }
+          
+      }); } }
+    </script>
+
+
+  <!--END GOOGLE PLUS SIGN IN BUTTON -->
+  </body>
+
+</html>
