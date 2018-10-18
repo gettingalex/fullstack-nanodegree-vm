@@ -44,8 +44,9 @@ python database_setup.py
 python application.py
 ```
 
-9. In the browser, open [http://localhost:8000/](http://localhost:8000/)
+9. In the browser, open [http://localhost:8000/](http://localhost:8000/) and use the interface to navigate the web app 
 
+10. JSON request can be made at URL [http://localhost:8000/catalog.json/](http://localhost:8000/catalog.json/) for all categories and items in the database. To output a single item, add the item id where it stated insert_id#_here at the following link: http://localhost:8000//catalog/item/insert_id#_here/JSON
 
 ## Code Style
 
