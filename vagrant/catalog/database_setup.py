@@ -41,8 +41,8 @@ class Category(Base):
     user = relationship(User)
 
     @property
-    """Return data from the table serialize"""
     def serialize(self):
+        """Return data from the table serialize"""
         return {
             'id': self.id,
             'name': self.name,

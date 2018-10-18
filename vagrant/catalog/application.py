@@ -14,14 +14,14 @@ from flask import session as login_session
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 from flask import make_response
-from flask import Flask, render_template,
-request, redirect, jsonify, url_for, flash
+from flask import (Flask, render_template,
+                   request, redirect, jsonify, url_for, flash)
 
 app = Flask(__name__)
 
 # Google Sign-in Client ID
-CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())
-['web']['client_id']
+CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())[
+                            'web']['client_id']
 
 
 # Connect to Database and create database session
@@ -198,8 +198,8 @@ def allCatalogJSON():
 
 
 # Return JSON of a specific item
-@app.route('/catalog/<int:category_id>/<int:item_id>/JSON')
-def oneItemJSON(category_id, item_id):
+@app.route('/catalog/item/<int:item_id>/JSON')
+def oneItemJSON(item_id):
     """Return JSON of a specific item"""
     itemJSON = session.query(Item).filter_by(id=item_id).one()
     return jsonify(itemJSON=itemJSON.serialize)
@@ -244,8 +244,8 @@ def showItem(category_id, item_id):
     Only display edit and delete to the user who created the item"""
     showItem = session.query(Item).filter_by(id=item_id).one()
     creator = getUserInfo(showItem.user_id)
-    if 'username' not in login_session or
-    creator.id != login_session['user_id']:
+    if 'username' not in login_session or \
+            creator.id != login_session['user_id']:
         return render_template(
             'publicShowItem.html', showItem=showItem, category_id=category_id)
     else:
@@ -334,8 +334,8 @@ def gdisconnect():
         print 'Access Token is None'
         flash('Current user not connected.')
         return redirect(url_for('allCategories'))
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s'
-    % login_session['access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
+        % login_session['access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     # Delete all login session stored variables
