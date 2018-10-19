@@ -186,7 +186,7 @@ def allCatalogJSON():
 def oneItemJSON(item_id):
     """Return JSON of a specific item"""
     itemJSON = session.query(Item).filter_by(id=item_id).one_or_none()
-    if itemJSON != None:
+    if itemJSON is not None:
         return jsonify(itemJSON=itemJSON.serialize)
     else:
         return "No item match the item id provided"
@@ -327,7 +327,7 @@ def getUserID(email):
     """Takes an email address and return a user id if
     this email address belongs to a user stored in the DB"""
     user = session.query(User).filter_by(email=email).one_or_none()
-    if user != None:
+    if user is not None:
         return user.id
     else:
         return None
