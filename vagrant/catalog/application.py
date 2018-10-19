@@ -185,8 +185,11 @@ def allCatalogJSON():
 @app.route('/catalog/item/<int:item_id>/JSON')
 def oneItemJSON(item_id):
     """Return JSON of a specific item"""
-    itemJSON = session.query(Item).filter_by(id=item_id).one()
-    return jsonify(itemJSON=itemJSON.serialize)
+    itemJSON = session.query(Item).filter_by(id=item_id).one_or_none()
+    if itemJSON != None:
+        return jsonify(itemJSON=itemJSON.serialize)
+    else:
+        return "No item match the item id provided"
 
 
 # HTML Template Main Methods
