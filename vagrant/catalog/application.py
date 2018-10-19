@@ -119,7 +119,7 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
-    user_id = getUserID(login_session['email'])
+    user_id = getUserID(data['email'])
     if not user_id:
         user_id = createUser(login_session)
     login_session['user_id'] = user_id
@@ -137,50 +137,34 @@ def gconnect():
     return output
 
 
-# creates a new user in the table user and
-# extracts all the field to populate the table
-def createUser(login_session):
-    """creates a new user in the table user and
-    extracts all the field to populate the table"""
-    newUser = User(name=login_session['username'], email=login_session[
-                   'email'], picture=login_session['picture'])
-    session.add(newUser)
-    session.commit()
-    # pull the info from the newly create user item in the table user
-    user = session.query(User).filter_by(
-        email=login_session['email']).one()
-    return user.id
-
-
-# If a user ID is passed into this method,
-# it returns the user object associated with the ID
-def getUserInfo(user_id):
-    """If a user ID is passed into this method,
-    it returns the user object associated with the ID"""
-    user = session.query(User).filter_by(id=user_id).one()
-    return user
-
-
-# Takes an email address and return a user id if
-# this email address belongs to a user stored in the DB
-def getUserID(email):
-    """Takes an email address and return a user id if
-    this email address belongs to a user stored in the DB"""
-    try:
-        user = session.query(User).filter_by(email=email).one()
-        return user.id
-    except ImportError:
-        return None
-
-
-# Helper function for newItem and editItem.
-# Input the category name, output the category id
-def categoryID(category):
-    """Helper function for newItem and editItem.
-    Input the category name, output the category id"""
-    whichCategory = session.query(Category).filter_by(name=category).one()
-    category_id = whichCategory.id
-    return category_id
+# Log out for Google Sign In
+@app.route('/gdisconnect')
+def gdisconnect():
+    """Log out for Google Sign In"""
+    access_token = login_session.get('access_token')
+    if access_token is None:
+        print 'Access Token is None'
+        flash('Current user not connected.')
+        return redirect(url_for('allCategories'))
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
+        % login_session['access_token']
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+    # Delete all login session stored variables
+    if result['status'] == '200':
+        del login_session['access_token']
+        del login_session['gplus_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['user_id']
+        flash("You have successfully been logged out.")
+        return redirect(url_for('allCategories'))
+    else:
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
+        response.headers['Content-Type'] = 'application/json'
+        return response
 
 
 # JSON Endpoint
@@ -325,33 +309,50 @@ def deleteItem(item_id):
         return render_template('deleteItem.html', deletedItem=deletedItem)
 
 
-# Log out for Google Sign In
-@app.route('/gdisconnect')
-def gdisconnect():
-    """Log out for Google Sign In"""
-    access_token = login_session.get('access_token')
-    if access_token is None:
-        print 'Access Token is None'
-        flash('Current user not connected.')
-        return redirect(url_for('allCategories'))
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
-        % login_session['access_token']
-    h = httplib2.Http()
-    result = h.request(url, 'GET')[0]
-    # Delete all login session stored variables
-    if result['status'] == '200':
-        del login_session['access_token']
-        del login_session['gplus_id']
-        del login_session['username']
-        del login_session['email']
-        del login_session['picture']
-        flash("You have successfully been logged out.")
-        return redirect(url_for('allCategories'))
+# If a user ID is passed into this method,
+# it returns the user object associated with the ID
+def getUserInfo(user_id):
+    """If a user ID is passed into this method,
+    it returns the user object associated with the ID"""
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+
+# Takes an email address and return a user id if
+# this email address belongs to a user stored in the DB
+def getUserID(email):
+    """Takes an email address and return a user id if
+    this email address belongs to a user stored in the DB"""
+    user = session.query(User).filter_by(email=email).one_or_none()
+    if user != None:
+        return user.id
     else:
-        response = make_response(
-            json.dumps('Failed to revoke token for given user.', 400))
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        return None
+
+
+# creates a new user in the table user and
+# extracts all the field to populate the table
+def createUser(login_session):
+    """creates a new user in the table user and
+    extracts all the field to populate the table"""
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    # pull the info from the newly create user item in the table user
+    user = session.query(User).filter_by(
+        email=login_session['email']).one()
+    return user.id
+
+
+# Helper function for newItem and editItem.
+# Input the category name, output the category id
+def categoryID(category):
+    """Helper function for newItem and editItem.
+    Input the category name, output the category id"""
+    whichCategory = session.query(Category).filter_by(name=category).one()
+    category_id = whichCategory.id
+    return category_id
 
 
 if __name__ == '__main__':
