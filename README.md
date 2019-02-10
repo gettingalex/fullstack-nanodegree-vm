@@ -1,10 +1,10 @@
-fullstack-nanodegree-vm
-=============
 
-Common code for the Relational Databases and Full Stack Fundamentals courses
 
 # Alexandre Deschenes's Item Catalog Project 
+
 The project is filed under [fullstack-nanodegree-vm/vagrant/catalog/](https://github.com/gettingalex/fullstack-nanodegree-vm/tree/master/vagrant/catalog)
+
+*fullstack-nanodegree-vm is the common code for the Relational Databases and Full Stack Fundamentals courses with Udacity
 
 ## About 
 
